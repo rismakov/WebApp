@@ -1,6 +1,7 @@
 import pandas as pd
-from stylometry_analysis import StyleFeatures
 import cPickle
+
+from stylometry_analysis_v1 import StyleFeatures
 
 def open_cPickle_file(filename):
     with open(filename, 'rb') as f:
@@ -10,7 +11,7 @@ def extract_and_filter_datapoint_text(text):
 	'''
 	Filters text and return gender prefiction and features of writing style
 	Input: string
-	Output: tuple of string and dictionary  
+	Output: tuple of string and dictionary
 	'''
 	features = StyleFeatures(text)
 	features = {feature:[v] for feature, v in features.iteritems()}

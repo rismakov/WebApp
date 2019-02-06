@@ -1,41 +1,61 @@
-import json
-import pandas as pd
-from flask import Flask, jsonify, render_template, request
 import cPickle as pickle
+import json
 import numpy as np
 import pandas as pd
-from datapoint_pipeline import open_cPickle_file, extract_and_filter_datapoint_text
+
 from collections import OrderedDict
+from flask import Flask, jsonify, render_template, request
+
+from datapoint_pipeline import open_cPickle_file, extract_and_filter_datapoint_text
+from info import ABOUT_MBTI
 
 app = Flask(__name__)
 model = open_cPickle_file('Fitted_Model_AdaBoostClassifier_Style') # opens trained Add Boost model
 
-MEANS = OrderedDict()
-MEANS['article_len'] = (1084,'longer','shorter')
-MEANS['mean_sentence_len'] = (26.44, 'longer','shorter')
-MEANS['mean_word_len'] = (4.834, 'longer', 'shorter')
-MEANS['type_token_ratio'] = (0.493, 'greater','weaker')
-MEANS['freq_commas'] = (57.7, 'higher','lower')
-MEANS['freq_quotation_marks'] = (0.15,'more','less')
-MEANS['freq_semi_colons'] = (1.02, 'greater','lower')
-MEANS['polarity'] = (0.084, 'more', 'less')
-MEANS['subjectivity'] = (0.42, 'more', 'less')
-MEANS['std_sentence_len'] = (16.48, 'more', 'less')
+MEANS = OrderedDict({
+    'article_len': (1084,'longer','shorter'),
+    'mean_sentence_len': (26.44, 'longer','shorter'),
+    'mean_word_len': (4.834, 'longer', 'shorter'),
+    'type_token_ratio': (0.493, 'greater','weaker'),
+    'freq_commas': (57.7, 'higher','lower'),
+    'freq_quotation_marks': (0.15,'more','less'),
+    'freq_semi_colons': (1.02, 'greater','lower'),
+    'polarity': (0.084, 'more', 'less'),
+    'subjectivity': (0.42, 'more', 'less'),
+    'std_sentence_len': (16.48, 'more', 'less')
+})
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
+
+@app.route('/lexophilia')
+def lexophilia():
+    return render_template('lexophilia.html')
+
+
+@app.route('/mbti')
+def mbti():
+    return render_template('mbti.html')
+
+
 @app.route('/app')
 def webapp():
     return render_template('web_app.html')
+
+
+@app.route('/mbti_app')
+def mbti_webapp():
+    return render_template('mbti_web_app.html')
+
 
 def get_predictive_info(user_text):
     '''
     Gets prediction and features of writing style from inputted text.
     Input: string
-    Output: tuple of string (gender prediction) and list 
-    (property of the text, whether is more or less than mean) 
+    Output: tuple of string (gender prediction) and list
+    (property of the text, whether is more or less than mean)
     '''
     prediction,features = extract_and_filter_datapoint_text(user_text)
 
@@ -46,11 +66,11 @@ def get_predictive_info(user_text):
         elif features[feature][0] <= params[0]:
             properties.append(params[2])
 
-    return prediction,properties
+    return prediction, properties
+
 
 @app.route('/prediction', methods =['POST'])
 def predict_gender():
-
     user_text = request.form['user_input']
     prediction,properties = get_predictive_info(user_text)
 
@@ -65,6 +85,17 @@ def predict_gender():
                         properties[8], properties[9])
 
     return render_template('prediction.html', detailed_analysis=detailed_analysis, prediction=prediction)
+
+
+@app.route('/prediction', methods =['POST'])
+def predict_mbti():
+    user_text = request.form['user_input']
+
+    prediction = predict_text(user_text)
+    about_type = ABOUT_MBTI[prediction]
+
+    return render_template('mbti_prediction.html', about_type=about_type, prediction=prediction)
+
 
 if __name__ == '__main__':
     # Start Flask app
