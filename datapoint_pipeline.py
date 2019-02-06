@@ -1,11 +1,11 @@
 import pandas as pd
-import cPickle
+import pickle
 
 from stylometry_analysis_v1 import StyleFeatures
 
-def open_cPickle_file(filename):
+def open_pickle_file(filename):
     with open(filename, 'rb') as f:
-        return cPickle.load(f)
+        return pickle.load(f)
 
 def extract_and_filter_datapoint_text(text):
 	'''
@@ -14,7 +14,7 @@ def extract_and_filter_datapoint_text(text):
 	Output: tuple of string and dictionary
 	'''
 	features = StyleFeatures(text)
-	features = {feature:[v] for feature, v in features.iteritems()}
+	features = {feature:[v] for feature, v in features.items()}
 	features = pd.DataFrame.from_dict(features)
 
 	features['polarity'] = features['polarity'] + 0.5
@@ -33,5 +33,5 @@ if __name__ == '__main__':
 	with open("text_files/my_text.txt") as f:
 		text = ' '.join([line.decode('utf-8').strip() for line in f.readlines()])
 
-	print extract_and_filter_datapoint_text(text)
+	print(extract_and_filter_datapoint_text(text))
 

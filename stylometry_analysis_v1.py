@@ -4,16 +4,16 @@ import numpy as np
 from textblob import TextBlob
 
 class StyleFeatures(dict):
-    ''' 
+    '''
     Retrieves features of writing style
     '''
 
     def find_freq(self,lst, search_item, normalizer):
         '''
         Finds normalized frequencies of tokens.
-        Input: lst is a list of the item you are counting through, 
+        Input: lst is a list of the item you are counting through,
         search_item (list or array-like object) is the item you are counting,
-        normalizer (also list, or array-like) is the object you are normalizing it by 
+        normalizer (also list, or array-like) is the object you are normalizing it by
         (words,sentences, or punctuation usually).
         '''
         return lst.count(search_item) / len(normalizer)
@@ -58,10 +58,10 @@ class StyleFeatures(dict):
                                 'freq_verys': [words, 'very', words]
                                 }
 
-        for item,params in freq_items.iteritems():
+        for item,params in freq_items.items():
             self[item] = self.find_freq(params[0],params[1],params[2])
 
-        for item,params in freq_items_per_thousand.iteritems():
+        for item,params in freq_items_per_thousand.items():
             self[item] = self.find_freq_per_thousand(params[0],params[1],params[2])
 
         self['article_len'] = len(words)
