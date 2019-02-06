@@ -15,6 +15,7 @@ def open_pickle_file(filename):
 VECTORIZER_FILENAME = 'mbti_tfidf_{}'.format(TFIDF_MAX_FEATURES)
 TFIDF_VEC = open_pickle_file(VECTORIZER_FILENAME)
 
+CLF = open_pickle_file('Fitted_Model_XGBC_Style')
 
 def predict_text(text):
 	'''
@@ -31,10 +32,8 @@ def predict_text(text):
 	features_df = pd.DataFrame.from_dict(features)
 	features_df['polarity'] = features_df['polarity'] + 1.0
 
-	print(features_df)
-
 	concat_df = pd.concat([features_df, tfidf_df], axis=1)
-	prediction = clf.predict(concat_df)
+	prediction = CLF.predict(concat_df)
 
 	return prediction
 
