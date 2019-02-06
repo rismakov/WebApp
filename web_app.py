@@ -1,16 +1,17 @@
-import cPickle as pickle
 import json
 import numpy as np
 import pandas as pd
+import pickle
 
 from collections import OrderedDict
 from flask import Flask, jsonify, render_template, request
 
-from datapoint_pipeline import open_cPickle_file, extract_and_filter_datapoint_text
+from datapoint_pipeline import open_pickle_file, extract_and_filter_datapoint_text
+from mbti_pipeline import predict_text
 from info import ABOUT_MBTI
 
 app = Flask(__name__)
-model = open_cPickle_file('Fitted_Model_AdaBoostClassifier_Style') # opens trained Add Boost model
+# model = open_pickle_file('Fitted_Model_AdaBoostClassifier_Style') # opens trained Add Boost model
 
 MEANS = OrderedDict({
     'article_len': (1084,'longer','shorter'),
@@ -60,7 +61,7 @@ def get_predictive_info(user_text):
     prediction,features = extract_and_filter_datapoint_text(user_text)
 
     properties = []
-    for feature,params in MEANS.iteritems():
+    for feature,params in MEANS.items():
         if features[feature][0] > params[0]:
             properties.append(params[1])
         elif features[feature][0] <= params[0]:
@@ -72,7 +73,7 @@ def get_predictive_info(user_text):
 @app.route('/prediction', methods =['POST'])
 def predict_gender():
     user_text = request.form['user_input']
-    prediction,properties = get_predictive_info(user_text)
+    prediction, properties = get_predictive_info(user_text)
 
     detailed_analysis = "Your style of writing suggests you are a {}. \
         Your text tends to be {} than the average political article, with {} sentence \
@@ -87,7 +88,7 @@ def predict_gender():
     return render_template('prediction.html', detailed_analysis=detailed_analysis, prediction=prediction)
 
 
-@app.route('/prediction', methods =['POST'])
+@app.route('/mbti_prediction', methods =['POST'])
 def predict_mbti():
     user_text = request.form['user_input']
 
