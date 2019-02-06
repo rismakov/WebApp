@@ -186,7 +186,6 @@ h6 {
 --------------------*/
 
 header {
-    background-image: url(../images/news_coffee4.jpg);
     background-repeat: none;
     background-attachment: scroll;
     background-position: center center;
@@ -196,6 +195,14 @@ header {
     -o-background-size: cover;
     text-align: center;
     color: #fff;
+}
+
+.news_bg {
+    background-image: url(../images/lexophilia/news_coffee.jpg);
+}
+
+.mbti_bg {
+    background-image: url(../images/mbti/image1.jpg);
 }
 
 header .intro-text {
