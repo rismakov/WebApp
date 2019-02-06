@@ -87,7 +87,7 @@ def predict_gender():
     return render_template('prediction.html', detailed_analysis=detailed_analysis, prediction=prediction)
 
 
-@app.route('/prediction', methods =['POST'])
+@app.route('/mbti_prediction', methods =['POST'])
 def predict_mbti():
     user_text = request.form['user_input']
 
