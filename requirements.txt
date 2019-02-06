@@ -5,4 +5,4 @@ numpy
 textblob==0.11.1
 scikit-learn
 scipy
-nltk 
+
