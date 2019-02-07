@@ -7,10 +7,14 @@ from utils.utils import convert_sparse_mat_to_df, open_cpickle_file, open_model
 TFIDF_MAX_FEATURES = 7000
 
 
-VECTORIZER_FILENAME = 'mbti_tfidf_{}'.format(TFIDF_MAX_FEATURES)
-TFIDF_VEC = open_cpickle_file(VECTORIZER_FILENAME)
+def get_tfidf_vec():
+	filename = 'mbti_tfidf_{}'.format(TFIDF_MAX_FEATURES)
+	return open_model(filename)
 
-CLF = open_model('Fitted_LR_MBTI_Model_{}'.format(TFIDF_MAX_FEATURES))
+
+def get_model():
+	return open_model('Fitted_LR_MBTI_Model_{}'.format(TFIDF_MAX_FEATURES))
+
 
 def predict_text(text):
 	'''
@@ -18,8 +22,9 @@ def predict_text(text):
 	Input: string
 	Output: tuple of string and dictionary
 	'''
-	tfidf = TFIDF_VEC.transform([text])
-	feature_names = TFIDF_VEC.get_feature_names()
+	tfidf_vec = get_tfidf_vec()
+	tfidf = tfidf_vec.transform([text])
+	feature_names = tfidf_vec.get_feature_names()
 	tfidf_df = convert_sparse_mat_to_df(tfidf, feature_names)
 
 	features = StyleFeatures(text).get_all_featurized_features()
@@ -28,7 +33,7 @@ def predict_text(text):
 	features_df['polarity'] = features_df['polarity'] + 1.0
 
 	concat_df = pd.concat([features_df, tfidf_df], axis=1)
-	prediction = CLF.predict(concat_df)
+	prediction = get_model().predict(concat_df)
 
 	return prediction[0]
 
