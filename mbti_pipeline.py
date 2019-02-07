@@ -2,20 +2,15 @@ import pandas as pd
 import pickle
 
 from data_transformation.stylometry_analysis import StyleFeatures
-from utils.utils import convert_sparse_mat_to_df
+from utils.utils import convert_sparse_mat_to_df, open_cpickle_file, open_model
 
-TFIDF_MAX_FEATURES = 4000
-
-
-def open_pickle_file(filename):
-    with open(filename, 'rb') as f:
-        return pickle.load(f)
+TFIDF_MAX_FEATURES = 7000
 
 
 VECTORIZER_FILENAME = 'mbti_tfidf_{}'.format(TFIDF_MAX_FEATURES)
-TFIDF_VEC = open_pickle_file(VECTORIZER_FILENAME)
+TFIDF_VEC = open_cpickle_file(VECTORIZER_FILENAME)
 
-CLF = open_pickle_file('Fitted_Model_XGBC_Style')
+CLF = open_model('Fitted_LR_MBTI_Model_{}'.format(TFIDF_MAX_FEATURES))
 
 def predict_text(text):
 	'''
@@ -35,7 +30,7 @@ def predict_text(text):
 	concat_df = pd.concat([features_df, tfidf_df], axis=1)
 	prediction = CLF.predict(concat_df)
 
-	return prediction
+	return prediction[0]
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@ import json
 import numpy as np
 import pandas as pd
 
-from collections import OrderedDict
+from ast import literal_eval
 from flask import Flask, jsonify, render_template, request
 
 from datapoint_pipeline import predict_gender_from_text
@@ -11,7 +11,7 @@ from info import ABOUT_MBTI
 
 app = Flask(__name__)
 
-MEANS = OrderedDict({
+MEANS = {
     'article_len': (1084,'longer','shorter'),
     'mean_sentence_len': (26.44, 'longer','shorter'),
     'mean_word_len': (4.834, 'longer', 'shorter'),
@@ -22,7 +22,7 @@ MEANS = OrderedDict({
     'polarity': (0.084, 'more', 'less'),
     'subjectivity': (0.42, 'more', 'less'),
     'std_sentence_len': (16.48, 'more', 'less')
-})
+}
 
 ORDERED_FEATURES = [
     'article_len', 'mean_sentence_len', 'mean_word_len', 'type_token_ratio', 'freq_commas',
@@ -78,6 +78,11 @@ def get_predictive_info(user_text):
 
     return prediction, properties
 
+def is_json(text):
+    '''This is hack-y way. Fix this so that different buttons in html code automatically check this.
+    '''
+    return (text[0] == '{') and (text[-1] == '}')
+
 
 @app.route('/prediction', methods =['POST'])
 def predict_gender():
@@ -100,6 +105,26 @@ def predict_gender():
 @app.route('/mbti_prediction', methods =['POST'])
 def predict_mbti():
     user_text = request.form['user_input']
+
+    if is_json(user_text):
+        user_text = literal_eval(user_text)
+
+        '''
+        formatted_user_text = []
+        for comment_info in user_text['comments']:
+            for single_comments in comment_info['data']:
+                post = single_comments['comment'].get('comment')
+                if post:
+                    formatted_user_text.append(post)
+        '''
+
+        user_text = [single_comments['comment']['comment'] for comment_info in user_text['comments']
+                     for single_comments in comment_info['data'] if single_comments['comment'].get('comment')]
+
+        print(user_text[0])
+        print(user_text[1])
+
+        user_text = '|||'.join(user_text)
 
     prediction = predict_text(user_text)
     about_type = ABOUT_MBTI[prediction]
