@@ -1,6 +1,5 @@
 from __future__ import division
 
-import _pickle as cPickle
 import pandas as pd
 import pickle
 import scipy
