@@ -1,17 +1,15 @@
 import json
 import numpy as np
 import pandas as pd
-import pickle
 
 from collections import OrderedDict
 from flask import Flask, jsonify, render_template, request
 
-from datapoint_pipeline import open_pickle_file, extract_and_filter_datapoint_text
+from datapoint_pipeline import predict_gender_from_text
 from mbti_pipeline import predict_text
 from info import ABOUT_MBTI
 
 app = Flask(__name__)
-# model = open_pickle_file('Fitted_Model_AdaBoostClassifier_Style') # opens trained Add Boost model
 
 MEANS = OrderedDict({
     'article_len': (1084,'longer','shorter'),
@@ -25,6 +23,14 @@ MEANS = OrderedDict({
     'subjectivity': (0.42, 'more', 'less'),
     'std_sentence_len': (16.48, 'more', 'less')
 })
+
+ORDERED_FEATURES = [
+    'article_len', 'mean_sentence_len', 'mean_word_len', 'type_token_ratio', 'freq_commas',
+    'freq_quotation_marks', 'freq_semi_colons', 'polarity', 'subjectivity', 'std_sentence_len'
+]
+
+LOWER_IND = 2
+HIGHER_IND = 1
 
 @app.route('/')
 def index():
@@ -58,14 +64,17 @@ def get_predictive_info(user_text):
     Output: tuple of string (gender prediction) and list
     (property of the text, whether is more or less than mean)
     '''
-    prediction,features = extract_and_filter_datapoint_text(user_text)
+    prediction, feature_df = predict_gender_from_text(user_text)
 
     properties = []
-    for feature,params in MEANS.items():
-        if features[feature][0] > params[0]:
-            properties.append(params[1])
-        elif features[feature][0] <= params[0]:
-            properties.append(params[2])
+    for feature in ORDERED_FEATURES:
+        feature_mean = MEANS[feature][0]
+        text_value = feature_df[feature][0]
+
+        if text_value > feature_mean:
+            properties.append(MEANS[feature][HIGHER_IND])
+        elif text_value <= feature_mean:
+            properties.append(MEANS[feature][LOWER_IND])
 
     return prediction, properties
 
@@ -75,15 +84,15 @@ def predict_gender():
     user_text = request.form['user_input']
     prediction, properties = get_predictive_info(user_text)
 
-    detailed_analysis = "Your style of writing suggests you are a {}. \
-        Your text tends to be {} than the average political article, with {} sentence \
-        lengths and {} word lengths. You tend to use {} diversity of vocabulary.\
-        Your writing tends to have a {} frequency of commas. \
-        Additionally, your text contains {} use of quotations and dialouge, and {} level of \
-        formality. Your writing tend to be {} polar, {} subjective, and posseses {} varied sentence\
-        lengths.".format(prediction, properties[0], properties[1], properties[2], properties[3],\
-                        properties[4], properties[5], properties[6], properties[7], \
-                        properties[8], properties[9])
+    detailed_analysis = ("Your style of writing suggests you are a {}. Your text tends to be {} than the average politi"
+                         "cal article, with {} sentence lengths and {} word lengths. You tend to use {} diversity of vo"
+                         "cabulary. Your writing tends to have a {} frequency of commas. Additionally, your text contai"
+                         "ns {} use of quotations and dialouge, and {} level of formality. Your writing tend to be {} p"
+                         "olar, {} subjective, and posseses {} varied sentence lengths.").format(
+                            prediction, properties[0], properties[1], properties[2], properties[3], properties[4],
+                            properties[5], properties[6], properties[7],
+                            properties[8], properties[9]
+                        )
 
     return render_template('prediction.html', detailed_analysis=detailed_analysis, prediction=prediction)
 

@@ -1,5 +1,6 @@
 from __future__ import division
 
+import _pickle as cPickle
 import pandas as pd
 import pickle
 import scipy
@@ -9,6 +10,19 @@ import zipfile
 def save_model(model, filename):
     with open(filename, 'wb') as f:
         pickle.dump(model, f)
+
+
+def open_model(filename):
+    with open(filename, 'rb') as f:
+        return pickle.load(f)
+
+
+def open_cpickle_file(filename):
+    with open(filename, 'rb') as f:
+        u = pickle._Unpickler(f)
+        u.encoding = 'latin1'
+        p = u.load()
+        return p
 
 
 def convert_sparse_mat_to_df(matrix, columns):

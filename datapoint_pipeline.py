@@ -2,26 +2,31 @@ import pandas as pd
 import pickle
 
 from stylometry_analysis_v1 import StyleFeatures
+from utils.utils import open_cpickle_file
 
-def open_pickle_file(filename):
-    with open(filename, 'rb') as f:
-        return pickle.load(f)
 
-def extract_and_filter_datapoint_text(text):
+def get_model():
+	return open_cpickle_file('Fitted_Model_AdaBoostClassifier_Style')
+
+
+def featurize_text(text):
+	features = StyleFeatures(text)
+	features = {feature:[v] for feature, v in features.items()}
+	features = pd.DataFrame.from_dict(features)
+
+	features['polarity'] = features['polarity'] + 1.0
+
+	return features
+
+def predict_gender_from_text(text):
 	'''
 	Filters text and return gender prefiction and features of writing style
 	Input: string
 	Output: tuple of string and dictionary
 	'''
-	features = StyleFeatures(text)
-	features = {feature:[v] for feature, v in features.items()}
-	features = pd.DataFrame.from_dict(features)
+	features = featurize_text(text)
 
-	features['polarity'] = features['polarity'] + 0.5
-
-	clf = open_cPickle_file('Fitted_Model_AdaBoostClassifier_Style')
-
-	prediction = clf.predict(features)
+	prediction = get_model().predict(features)
 
 	if prediction == 1:
 		return 'male', features
