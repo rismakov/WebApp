@@ -1,11 +1,10 @@
 import pandas as pd
 import pickle
 
-from constants import TFIDF_MAX_FEATURES
 from data_transformation.stylometry_analysis import StyleFeatures
+from utils.utils import convert_sparse_mat_to_df
 
-VECTORIZER_FILENAME =
-TFIDF_VEC = open_pickle_file(VECTORIZER_FILENAME)
+TFIDF_MAX_FEATURES = 4000
 
 
 def open_pickle_file(filename):
@@ -13,24 +12,28 @@ def open_pickle_file(filename):
         return pickle.load(f)
 
 
+VECTORIZER_FILENAME = 'mbti_tfidf_{}'.format(TFIDF_MAX_FEATURES)
+TFIDF_VEC = open_pickle_file(VECTORIZER_FILENAME)
+
+CLF = open_pickle_file('Fitted_Model_XGBC_Style')
+
 def predict_text(text):
 	'''
 	Filters text and return gender prefiction and features of writing style
 	Input: string
 	Output: tuple of string and dictionary
 	'''
-	tfidf = TFIDF_VEC.transform(text)
+	tfidf = TFIDF_VEC.transform([text])
+	feature_names = TFIDF_VEC.get_feature_names()
+	tfidf_df = convert_sparse_mat_to_df(tfidf, feature_names)
 
-	features = StyleFeatures(text)
-	# features = {feature: [v] for feature, v in features.items()}
+	features = StyleFeatures(text).get_all_featurized_features()
+	features = {feature: [v] for feature, v in features.items()}
+	features_df = pd.DataFrame.from_dict(features)
+	features_df['polarity'] = features_df['polarity'] + 1.0
 
-	df = pd.DataFrame.from_dict(features)
-	df['polarity'] = df['polarity'] + 1.0
-
-	clf = open_pickle_file('Fitted_Model_AdaBoostClassifier_Style')
-
-	concat_df = pd.concat([df, tfidf], axis=1)
-	prediction = clf.predict(features)
+	concat_df = pd.concat([features_df, tfidf_df], axis=1)
+	prediction = CLF.predict(concat_df)
 
 	return prediction
 
@@ -39,5 +42,5 @@ if __name__ == '__main__':
 	with open("text_files/my_text.txt") as f:
 		text = ' '.join([line.decode('utf-8').strip() for line in f.readlines()])
 
-	print predict_text(text)
+	print(predict_text(text))
 
