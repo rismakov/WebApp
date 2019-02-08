@@ -13,7 +13,7 @@ def get_tfidf_vec():
 
 
 def get_model():
-	return open_model('Fitted_LR_MBTI_Model_{}'.format(TFIDF_MAX_FEATURES))
+	return open_model('Fitted_LR_MBTI_MODEL_{}'.format(TFIDF_MAX_FEATURES))
 
 
 def predict_text(text):
