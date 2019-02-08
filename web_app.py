@@ -121,9 +121,6 @@ def predict_mbti():
         user_text = [single_comments['comment']['comment'] for comment_info in user_text['comments']
                      for single_comments in comment_info['data'] if single_comments['comment'].get('comment')]
 
-        print(user_text[0])
-        print(user_text[1])
-
         user_text = '|||'.join(user_text)
 
     prediction = predict_text(user_text)
